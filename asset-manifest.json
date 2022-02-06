@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/Trellotris/static/css/main.40f50899.css",
+    "main.js": "/Trellotris/static/js/main.6d341314.js",
+    "static/js/787.b8e10bfe.chunk.js": "/Trellotris/static/js/787.b8e10bfe.chunk.js",
+    "index.html": "/Trellotris/index.html",
+    "main.40f50899.css.map": "/Trellotris/static/css/main.40f50899.css.map",
+    "main.6d341314.js.map": "/Trellotris/static/js/main.6d341314.js.map",
+    "787.b8e10bfe.chunk.js.map": "/Trellotris/static/js/787.b8e10bfe.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.40f50899.css",
+    "static/js/main.6d341314.js"
+  ]
+}
