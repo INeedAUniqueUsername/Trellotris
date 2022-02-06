@@ -1,9 +1,21 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import './Trello.css'
 import reportWebVitals from './reportWebVitals';
-
+import logo from "./logo.png"
+import DocumentMeta from 'react-document-meta'
+const meta = {
+  title: 'Trellotris',
+  img:logo,
+  description: 'A new way to get work done',
+  canonical: 'https://hardlyworking.tech',
+  meta: {
+      charset: 'utf-8',
+      name: {
+          keywords: 'react,meta,document,html,tags'
+      }
+  }
+}
 
 const width = 12
 const height = 10
@@ -17,7 +29,8 @@ const CARDS = [
   "Test critical performance",
   "Rewrite module in Python",
   "Remove API key from GitHub",
-  "Prepare Docker container",
+  "Run Docker container",
+  "Change root password",
   "Update YAML file",
 ]
 function getCard() {
@@ -73,7 +86,7 @@ class Tetra {
     var next = this.tiles.map(t => ({x: t.x, y:-t.y}))
     for(var t of next){
       var p = {x:t.x + this.pos.x, y:t.y + this.pos.y}
-      if(!isInX(p) || (isInY(p) && !isOpen(p, blocks))){
+      if(!isInBounds(p) || !isOpen(p, blocks)){
         return false
       }
     }
@@ -85,7 +98,7 @@ class Tetra {
     var next = this.tiles.map(t => ({x: -t.y, y:t.x}))
     for(var t of next){
       var p = {x:t.x + this.pos.x, y:t.y + this.pos.y}
-      if(!isInX(p) || (isInY(p) && !isOpen(p, blocks))){
+      if(!isInBounds(p) || !isOpen(p, blocks)){
         return false
       }
     }
@@ -97,7 +110,7 @@ class Tetra {
     var next = this.tiles.map(t => ({x: t.y, y:-t.x}))
     for(var t of next){
       var p = {x:t.x + this.pos.x, y:t.y + this.pos.y}
-      if(!isInX(p) || (isInY(p) && !isOpen(p, blocks))){
+      if(!isInBounds(p) || !isOpen(p, blocks)){
         return false
       }
     }
@@ -186,8 +199,10 @@ class Game extends React.Component {
       mode: MODE_PLAY,
       tetra: null,
       blocks:Array(width).fill().map((_, x) => Array(height).fill(false)),
+      agile: 0,
+      highAgile: localStorage.getItem("highAgile") || 0,
       score: 0,
-      highScore: 0,
+      highScore: localStorage.getItem("highScore") || 0,
       moveUp: false,
       moveDown: false,
       moveRight:false,
@@ -218,6 +233,7 @@ class Game extends React.Component {
     }
   }
   componentDidMount(){
+    document.title = "Trellotris"
     this.updateTimer = setInterval(
       () => this.update(),
       800
@@ -257,7 +273,11 @@ class Game extends React.Component {
           tetra.turnRight(blocks)
         }
         if(hardDrop){
-          while(tetra.moveRight(blocks));
+          var agile = 0.0
+          while(tetra.moveRight(blocks)){
+            agile++
+          }
+          this.setState({agile: this.state.agile + agile})
         }
       }
       return {
@@ -275,7 +295,7 @@ class Game extends React.Component {
     const {mode} = this.state
     if(mode === MODE_PLAY){
       this.setState((state, props) => {
-        var { mode, tetra, blocks, score, highScore } = this.state
+        var { mode, tetra, blocks, score, highScore, agile, highAgile } = this.state
         if(tetra){
 
           if(!tetra.fall(blocks)){
@@ -284,8 +304,11 @@ class Game extends React.Component {
             for(var t of tetra.getPoints()){
               if(!isInBounds(t)) {
                 this.setState({mode: MODE_GAME_OVER,
-                  highScore: Math.max(score, highScore)
+                  highScore: Math.max(score, highScore),
+                  highAgile: Math.max(agile, highAgile)
                 });
+                localStorage.setItem('highScore', highScore);
+                localStorage.setItem('highAgile', highAgile);
               }
             }
             tetra = null;
@@ -308,9 +331,10 @@ class Game extends React.Component {
                   blocks[x2][y] = blocks[x2 - 1][y]
                 }
               }
-              this.setState({ score: this.state.score + points })
+              score += points
               points++
             }
+            this.setState({ score: score })
           }
           var f = [L, I, S, O, T][Math.floor(Math.random() * 5)]
           tetra = f(p(-1, height/2))
@@ -345,36 +369,46 @@ class Game extends React.Component {
         
         <div className="top">
           <div className="separate"></div>
+          <div className="separate"></div>
+          <img src={logo} width="24px" height="24px"></img>
           <h2>Trello</h2>
           <div className="separate"></div>
-          <p>Workspaces</p>
+          <p>WSD to move</p>
           <div className="separate"></div>
-          <p>Recent</p>
+          <p>Shift+D to drop</p>
           <div className="separate"></div>
-          <p>Starred</p>
+          <p>E/Q to turn</p>
           <div className="separate"></div>
-          <p>Templates</p>
+          <p>Shift+E to flip</p>
         </div>
         <div className="second">
           <div className="separate"></div>
           <div className="separate"></div>
-          <p>Board</p>
+          <p>Serious Business  R&amp;D</p>
           <div className="separate"></div>
-          <p>R&amp;D</p>
+          <a href="https://twitter.com/intent/tweet?text=https://hardlyworking.tech/">+Invite</a>
+          
           <div className="separate"></div>
-          <p>Workspace visible</p>
+          <p>Agility: {this.state.agile}</p>
           <div className="separate"></div>
-          <p>+Invite</p>
-          <div className="separate"></div>
-          <p>Score: {this.state.score}</p>
+          <p>Sprint: {this.state.score}</p>
+          {this.state.highAgile > 0 && 
+          [<div className="separate"></div>,
+          <p>High Agility: {this.state.highAgile}</p>]}
           {this.state.highScore > 0 && 
           [<div className="separate"></div>,
-          <p>High score: {this.state.highScore}</p>]}
+          <p>High Sprint: {this.state.highScore}</p>]}
+          <div className="separate"></div>,
+          <b onClick={() => {this.setState({
+            mode:MODE_PLAY,
+            score:0,
+            agile:0,
+            tetra:null,
+            blocks:Array(width).fill().map((_, x) => Array(height).fill(false))
+            })}}>Reset</b>
           {this.state.mode === MODE_GAME_OVER && [
             <div className="separate"></div>,
             <p>Game over!</p>,
-            <div className="separate"></div>,
-            <b onClick={() => {this.setState({mode:MODE_PLAY, score:0})}}>Reset</b>
           ]}
         </div>
         <div style={{ overflowX:"scroll", whiteSpace:"nowrap", width:"100%"  }}>
@@ -398,12 +432,13 @@ class Game extends React.Component {
                   }
                 })}
                 
-                <pre className="edge"> </pre>
+                <p className='edge'>Add a card</p>
               </div>
             </div>]
           })}
           <div className="separator"></div>
         </div>
+        <DocumentMeta {...meta} />
       </div>
     );
   }
